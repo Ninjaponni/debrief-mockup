@@ -1,0 +1,1868 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Debrief — Sit Trening</title>
+<style>
+  /* --- FONTS --- */
+  @font-face {
+    font-family: 'Eighties Comeback';
+    src: url('fonts/EightiesComeback-Variable.ttf') format('truetype');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'Eighties Comeback';
+    src: url('fonts/EightiesComeback-Italic-Variable.ttf') format('truetype');
+    font-weight: 100 900;
+    font-style: italic;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'Inter';
+    src: url('fonts/Inter-Variable.ttf') format('truetype');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --tawny: #651a5a;
+    --tawny-deep: #4a1242;
+    --salmon: #fe8c68;
+    --salmon-glow: #ff9f7f;
+    --mint: #dcfae0;
+    --mint-light: #f4fff6;
+    --chalk: #f7ecff;
+    --bg: #1e0f1c;
+    --bg-warm: #271529;
+    --text: #f4fff6;
+    --text-muted: #c9b3c5;
+    --card-bg: rgba(101, 26, 90, 0.12);
+    --card-border: rgba(254, 140, 104, 0.12);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* --- GRAIN OVERLAY --- */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.4;
+  }
+
+  /* --- SCROLL CONTAINER --- */
+  .scroll-wrapper {
+    position: relative;
+    z-index: 5;
+  }
+
+  /* --- LANDSCAPE (fixed bottom strip) — IN FRONT of content --- */
+  .landscape {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 200px;
+    z-index: 50;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  /* Solid background strip that covers everything behind the landscape.
+     Sits at z-index 45, between content (z:5) and landscape SVG (z:50). */
+  .landscape-mask {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 200px;
+    background: var(--bg);
+    z-index: 45;
+    pointer-events: none;
+  }
+
+  /* Content fade zone — fades content to background color above the landscape */
+  .content-fade {
+    position: fixed;
+    bottom: 180px;
+    left: 0;
+    width: 100%;
+    height: 140px;
+    z-index: 44;
+    pointer-events: none;
+    background: linear-gradient(to bottom, transparent 0%, var(--bg) 100%);
+  }
+
+  .landscape-canvas {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .landscape-canvas svg {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* --- PONY --- */
+  .pony-container {
+    position: fixed;
+    bottom: 100px;
+    left: 5%;
+    z-index: 60;
+    pointer-events: none;
+    transition: left 0.12s ease-out;
+    will-change: left, bottom;
+  }
+
+  .pony-stick {
+    width: 3px;
+    height: 36px;
+    background: linear-gradient(to bottom, #a0704f, #7a5535);
+    margin: 0 auto;
+    border-radius: 2px;
+    box-shadow: 1px 0 3px rgba(0,0,0,0.3);
+  }
+
+  .pony {
+    font-size: 44px;
+    text-align: center;
+    line-height: 1;
+    filter: drop-shadow(0 4px 16px rgba(0,0,0,0.5));
+    transform-origin: center bottom;
+    transition: transform 0.12s ease-out;
+  }
+
+  /* --- PROGRESS BAR --- */
+  .progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--tawny), var(--salmon), var(--mint));
+    z-index: 100;
+    transition: width 0.08s linear;
+    box-shadow: 0 0 12px rgba(254,140,104,0.4);
+  }
+
+  /* --- STATION LABEL --- */
+  .station-indicator {
+    position: fixed;
+    top: 24px;
+    right: 28px;
+    z-index: 100;
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    opacity: 0;
+    transition: opacity 0.5s;
+    font-weight: 600;
+  }
+  .station-indicator.show { opacity: 0.5; }
+
+  /* --- STATION DOTS (bottom) --- */
+  .station-dots {
+    position: fixed;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 14px;
+    z-index: 70;
+  }
+
+  .station-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .station-dot.active {
+    background: var(--salmon);
+    transform: scale(1.8);
+    box-shadow: 0 0 8px rgba(254,140,104,0.5);
+  }
+
+  /* --- SECTIONS --- */
+  section {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 100px 40px 240px;
+    position: relative;
+  }
+
+  .section-inner {
+    max-width: 680px;
+    width: 100%;
+  }
+
+  /* --- SCROLL-TRIGGERED ANIMATION CLASSES --- */
+  .reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .reveal-left {
+    opacity: 0;
+    transform: translateX(-40px);
+    transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .reveal-left.visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .reveal-right {
+    opacity: 0;
+    transform: translateX(40px);
+    transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .reveal-right.visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .reveal-scale {
+    opacity: 0;
+    transform: scale(0.92);
+    transition: opacity 1s ease, transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .reveal-scale.visible {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  /* --- TYPOGRAPHY --- */
+  .label {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 10px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--salmon);
+    margin-bottom: 20px;
+    font-weight: 700;
+    opacity: 0.8;
+  }
+
+  h1 {
+    font-family: 'Eighties Comeback', serif;
+    font-size: clamp(2.6rem, 6vw, 4.5rem);
+    font-weight: 400;
+    line-height: 1.15;
+    margin-bottom: 28px;
+    padding-bottom: 4px;
+    color: var(--mint-light);
+    text-wrap: balance;
+  }
+
+  h2 {
+    font-family: 'Eighties Comeback', serif;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 400;
+    line-height: 1.2;
+    margin-bottom: 20px;
+    color: var(--mint-light);
+    text-wrap: balance;
+  }
+
+  .subtitle {
+    font-size: 1.05rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+    max-width: 520px;
+  }
+
+  /* --- INTRO special --- */
+  .intro-section h1 {
+    background: linear-gradient(135deg, var(--mint-light), var(--chalk), var(--salmon-glow));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* --- CARDS --- */
+  .fact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+    margin-top: 36px;
+  }
+
+  .fact-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 24px;
+    backdrop-filter: blur(8px);
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+
+  .fact-card:hover {
+    border-color: rgba(254,140,104,0.3);
+    box-shadow: 0 8px 32px rgba(254,140,104,0.08);
+  }
+
+  .fact-number {
+    font-family: 'Eighties Comeback', serif;
+    font-size: 2.4rem;
+    font-weight: 400;
+    color: var(--salmon);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .fact-label {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  /* --- DELIVERABLE CARDS --- */
+  .deliverable-card .fact-number {
+    font-family: 'Eighties Comeback', serif;
+    font-size: 1.15rem;
+    font-weight: 400;
+    color: var(--mint-light);
+  }
+
+  /* --- INSIGHT CARDS --- */
+  .insight-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    margin-top: 36px;
+  }
+
+  .insight {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 28px 28px 28px 32px;
+    border-left: 3px solid var(--chalk);
+    backdrop-filter: blur(8px);
+  }
+
+  .insight-quote {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    margin-bottom: 14px;
+    font-weight: 500;
+    color: var(--mint-light);
+  }
+
+  .insight-source {
+    font-size: 0.78rem;
+    color: var(--chalk);
+    opacity: 0.7;
+  }
+
+  .insight-source a {
+    color: var(--chalk);
+    text-decoration: none;
+    border-bottom: 1px dotted rgba(247,236,255,0.4);
+    transition: border-color 0.2s, opacity 0.2s;
+  }
+
+  .insight-source a:hover {
+    opacity: 1;
+    border-bottom-style: solid;
+  }
+
+  /* --- GAP VISUAL --- */
+  .gap-container {
+    display: flex;
+    align-items: stretch;
+    gap: 20px;
+    margin-top: 40px;
+  }
+
+  .gap-side {
+    flex: 1;
+    padding: 32px;
+    border-radius: 16px;
+    backdrop-filter: blur(8px);
+  }
+
+  .gap-side.left {
+    background: rgba(101, 26, 90, 0.15);
+    border: 1px solid rgba(101, 26, 90, 0.3);
+  }
+
+  .gap-side.right {
+    background: rgba(254, 140, 104, 0.08);
+    border: 1px solid rgba(254,140,104,0.2);
+  }
+
+  .gap-label {
+    font-family: 'Eighties Comeback', serif;
+    font-size: 0.9rem;
+    font-weight: 400;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .gap-side.left .gap-label { color: var(--chalk); }
+  .gap-side.right .gap-label { color: var(--salmon); }
+
+  .gap-text {
+    font-size: 0.92rem;
+    line-height: 1.7;
+    color: var(--text-muted);
+  }
+
+  /* Barriers section */
+  .barriers-label {
+    text-align: center;
+    font-size: 0.72rem;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--salmon);
+    margin: 36px 0 20px;
+    font-weight: 600;
+  }
+
+  .barriers-row {
+    display: flex;
+    gap: 12px;
+    position: relative;
+  }
+
+  .barrier {
+    flex: 1;
+    background: rgba(254,140,104,0.04);
+    border: 1px solid rgba(254,140,104,0.15);
+    border-radius: 14px;
+    padding: 20px;
+    cursor: default;
+    transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+    position: relative;
+  }
+
+  .barrier:hover {
+    background: rgba(254,140,104,0.1);
+    border-color: rgba(254,140,104,0.4);
+    box-shadow: 0 4px 20px rgba(254,140,104,0.1);
+  }
+
+  .barrier-name {
+    font-family: 'Eighties Comeback', serif;
+    font-size: 0.95rem;
+    font-weight: 400;
+    color: var(--salmon);
+  }
+
+  /* Tooltip that floats above the barrier card */
+  .barrier-tooltip {
+    position: absolute;
+    bottom: calc(100% + 12px);
+    left: 50%;
+    transform: translateX(-50%) translateY(8px);
+    width: 280px;
+    background: rgba(39, 21, 41, 0.95);
+    border: 1px solid rgba(254,140,104,0.3);
+    border-radius: 12px;
+    padding: 18px 20px;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(254,140,104,0.1);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 80;
+  }
+
+  /* Tooltip arrow */
+  .barrier-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: rgba(39, 21, 41, 0.95);
+  }
+
+  .barrier:hover .barrier-tooltip {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    pointer-events: auto;
+  }
+
+  /* --- PROBLEM REVEAL --- */
+  .reveal-section {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 100px 40px 240px;
+    position: relative;
+  }
+
+  .reveal-section::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(254,140,104,0.08) 0%, transparent 70%);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 1.5s ease;
+  }
+
+  .reveal-section.glowing::before {
+    opacity: 1;
+  }
+
+  .problem-text {
+    font-family: 'Eighties Comeback', serif;
+    font-size: clamp(1.5rem, 3.5vw, 2.5rem);
+    line-height: 1.5;
+    max-width: 640px;
+    font-weight: 400;
+    color: var(--mint-light);
+  }
+
+  .problem-text .highlight {
+    color: var(--salmon);
+    position: relative;
+    font-style: italic;
+  }
+
+  .problem-text .highlight::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--salmon), transparent);
+    transform: scaleX(0);
+    transition: transform 1s ease 0.8s;
+    transform-origin: left;
+  }
+
+  .problem-text.visible .highlight::after {
+    transform: scaleX(1);
+  }
+
+  /* --- STRATEGIC TRACKS --- */
+  .tracks {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 36px;
+  }
+
+  .track {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    overflow: hidden;
+    backdrop-filter: blur(8px);
+    transition: border-color 0.3s;
+  }
+
+  .track:hover {
+    border-color: rgba(254,140,104,0.2);
+  }
+
+  .track-header {
+    padding: 24px 28px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.3s;
+    user-select: none;
+  }
+
+  .track-header:hover {
+    background: rgba(255,255,255,0.02);
+  }
+
+  .track-name {
+    font-family: 'Eighties Comeback', serif;
+    font-size: 1.1rem;
+    font-weight: 400;
+    color: var(--mint-light);
+  }
+
+  .track-desc {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  .track-toggle {
+    font-size: 1.4rem;
+    color: var(--text-muted);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    font-weight: 300;
+  }
+
+  .track.open .track-toggle {
+    transform: rotate(45deg);
+    color: var(--salmon);
+  }
+
+  .track-content {
+    padding: 0 28px 28px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .track-content h4 {
+    font-family: 'Inter', system-ui, sans-serif;
+    color: var(--chalk);
+    font-size: 0.72rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin: 20px 0 8px;
+    font-weight: 700;
+  }
+
+  .track-content h4:first-child {
+    margin-top: 0;
+  }
+
+  .track-fav {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 24px;
+    padding: 10px 22px;
+    background: rgba(254, 140, 104, 0.08);
+    border: 1px solid rgba(254,140,104,0.25);
+    border-radius: 10px;
+    color: var(--salmon);
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .track-fav:hover {
+    background: rgba(254, 140, 104, 0.15);
+    transform: scale(1.03);
+  }
+
+  .track-fav.selected {
+    background: var(--salmon);
+    color: var(--bg);
+    border-color: var(--salmon);
+    box-shadow: 0 4px 16px rgba(254,140,104,0.3);
+  }
+
+  /* --- QUESTIONS --- */
+  .questions {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    margin-top: 36px;
+  }
+
+  .question {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 24px;
+    backdrop-filter: blur(8px);
+  }
+
+  .question-text {
+    font-family: 'Eighties Comeback', serif;
+    font-size: 1rem;
+    margin-bottom: 14px;
+    font-weight: 400;
+    color: var(--mint-light);
+    line-height: 1.4;
+  }
+
+  .question textarea {
+    width: 100%;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(254,140,104,0.1);
+    border-radius: 10px;
+    padding: 14px 16px;
+    color: var(--text);
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.88rem;
+    resize: vertical;
+    min-height: 56px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    line-height: 1.5;
+  }
+
+  .question textarea:focus {
+    outline: none;
+    border-color: rgba(254,140,104,0.35);
+    box-shadow: 0 0 0 3px rgba(254,140,104,0.08);
+  }
+
+  .question textarea::placeholder {
+    color: var(--text-muted);
+    opacity: 0.4;
+  }
+
+  /* --- CTA --- */
+  .cta-section {
+    text-align: center;
+  }
+
+  .cta-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 36px;
+    padding: 18px 44px;
+    background: linear-gradient(135deg, var(--salmon), #ff7a52);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s;
+    box-shadow: 0 6px 28px rgba(254,140,104,0.25);
+    letter-spacing: 0.02em;
+  }
+
+  .cta-button:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 12px 40px rgba(254,140,104,0.35);
+  }
+
+  .cta-button:active {
+    transform: translateY(-1px) scale(0.99);
+  }
+
+  /* --- STARS BACKGROUND --- */
+  .stars {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .star {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: white;
+    border-radius: 50%;
+    opacity: 0;
+    animation: twinkle ease-in-out infinite;
+  }
+
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.05; }
+    50% { opacity: 0.5; }
+  }
+
+  /* --- SHOOTING STAR --- */
+  .shooting-star {
+    position: fixed;
+    width: 80px;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(254,140,104,0.6), transparent);
+    border-radius: 1px;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 1;
+    transform-origin: left center;
+  }
+
+  @keyframes shootingStar {
+    0% {
+      opacity: 0;
+      transform: translateX(0) translateY(0) rotate(var(--angle));
+    }
+    5% {
+      opacity: 0.8;
+    }
+    40% {
+      opacity: 0.3;
+    }
+    100% {
+      opacity: 0;
+      transform: translateX(300px) translateY(120px) rotate(var(--angle));
+    }
+  }
+
+  /* --- SUPERPONNI LOGO --- */
+  .logo-link {
+    position: fixed;
+    top: 20px;
+    left: 28px;
+    z-index: 100;
+    opacity: 0;
+    animation: fadeInLogo 1s ease 0.5s forwards;
+  }
+
+  @keyframes fadeInLogo {
+    to { opacity: 0.5; }
+  }
+
+  .logo-link:hover { opacity: 1; }
+
+  .logo {
+    height: 20px;
+    display: block;
+  }
+
+  /* --- TOAST --- */
+  .toast {
+    position: fixed;
+    bottom: 240px;
+    left: 50%;
+    transform: translateX(-50%) translateY(16px);
+    background: var(--salmon);
+    color: white;
+    padding: 12px 28px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 200;
+    pointer-events: none;
+    box-shadow: 0 8px 24px rgba(254,140,104,0.3);
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* --- SCROLL HINT --- */
+  .scroll-hint {
+    position: fixed;
+    bottom: 240px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 70;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    opacity: 0;
+    animation: fadeInHint 1s ease 1.5s forwards;
+    transition: opacity 0.5s;
+    pointer-events: none;
+  }
+
+  .scroll-hint.hidden { opacity: 0 !important; }
+
+  @keyframes fadeInHint {
+    to { opacity: 0.5; }
+  }
+
+  .scroll-hint-text {
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .scroll-hint-arrow {
+    width: 12px;
+    height: 12px;
+    border-right: 1.5px solid var(--text-muted);
+    border-bottom: 1.5px solid var(--text-muted);
+    transform: rotate(45deg);
+    animation: bounceArrow 2s ease-in-out infinite;
+  }
+
+  @keyframes bounceArrow {
+    0%, 100% { transform: rotate(45deg) translateY(0); }
+    50% { transform: rotate(45deg) translateY(6px); }
+  }
+
+  /* --- AMBIENT PARTICLES --- */
+  .particles {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 1;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .particle {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0;
+    animation: floatUp linear infinite;
+  }
+
+  @keyframes floatUp {
+    0% { opacity: 0; transform: translateY(0) scale(0); }
+    10% { opacity: 0.5; transform: scale(1); }
+    90% { opacity: 0.2; }
+    100% { opacity: 0; transform: translateY(-100vh) scale(0.5); }
+  }
+
+  /* --- MOON --- */
+  .moon {
+    position: fixed;
+    top: 70px;
+    right: 70px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 38% 35%, #fffef5 0%, #f0e8d0 30%, #d4c9a8 55%, #c4b899 100%);
+    z-index: 2;
+    pointer-events: none;
+    animation: moonPulse 8s ease-in-out infinite;
+  }
+
+  /* Glow layers via pseudo-elements for depth */
+  .moon::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 180%;
+    height: 180%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,254,240,0.25) 0%, rgba(244,236,210,0.12) 40%, transparent 70%);
+    animation: moonGlowInner 8s ease-in-out infinite;
+  }
+
+  .moon::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 400%;
+    height: 400%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(247,236,255,0.10) 0%, rgba(244,236,210,0.05) 30%, transparent 60%);
+    animation: moonGlowOuter 8s ease-in-out infinite;
+  }
+
+  @keyframes moonPulse {
+    0%, 100% {
+      box-shadow: 0 0 15px 5px rgba(255,254,240,0.15), 0 0 40px 15px rgba(244,236,210,0.08);
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      box-shadow: 0 0 20px 8px rgba(255,254,240,0.22), 0 0 55px 20px rgba(244,236,210,0.12);
+      transform: scale(1.04);
+      opacity: 0.92;
+    }
+  }
+
+  @keyframes moonGlowInner {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    50% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.75; }
+  }
+
+  @keyframes moonGlowOuter {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    50% { transform: translate(-50%, -50%) scale(1.08); opacity: 0.6; }
+  }
+
+  /* --- MOONLIGHT ON CARDS ---
+     Dynamic light from the moon. The glow position updates based on the
+     card's position relative to the moon, using CSS custom properties
+     --ml-x and --ml-y (set via JS). */
+  .moonlit {
+    position: relative;
+  }
+  .moonlit > .moonshine {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+  /* Corner glow — positioned dynamically via --ml-x, --ml-y (0-100%) */
+  .moonshine::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(
+      ellipse 120px 120px at var(--ml-x, 90%) var(--ml-y, 10%),
+      rgba(255,254,240,0.09) 0%,
+      rgba(247,236,255,0.04) 35%,
+      transparent 70%
+    );
+    pointer-events: none;
+  }
+  /* Edge highlight — a thin bright line along the edge closest to the moon */
+  .moonshine::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    pointer-events: none;
+    background:
+      linear-gradient(
+        to left,
+        rgba(255,254,240, var(--ml-edge-r, 0.14)) 0%, transparent 50%
+      ) top right / var(--ml-top-w, 55%) 1px no-repeat,
+      linear-gradient(
+        to bottom,
+        rgba(255,254,240, var(--ml-edge-b, 0.11)) 0%, transparent 50%
+      ) top right / 1px var(--ml-right-h, 55%) no-repeat;
+  }
+
+  /* --- DELIVERABLE TOOLTIP --- */
+  .fact-card {
+    position: relative;
+  }
+
+  .card-tooltip {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%) translateY(8px);
+    width: 260px;
+    background: rgba(39, 21, 41, 0.95);
+    border: 1px solid rgba(254,140,104,0.25);
+    border-radius: 12px;
+    padding: 16px 18px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 80;
+  }
+
+  .card-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: rgba(39, 21, 41, 0.95);
+  }
+
+  .fact-card:hover .card-tooltip {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    pointer-events: auto;
+  }
+
+  /* --- TRACK BODY smoother animation --- */
+  .track-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .track.open .track-body {
+    max-height: 700px;
+    transition: max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+<a class="logo-link" href="https://superponni.no" target="_blank"><img class="logo" src="logo.svg" alt="Superponni"></a>
+<div class="station-indicator" id="stationLabel"></div>
+
+<!-- Stars -->
+<div class="stars" id="stars"></div>
+
+<!-- Moon -->
+<div class="moon"></div>
+
+<!-- Particles -->
+<div class="particles" id="particles"></div>
+
+<!-- Station dots -->
+<div class="station-dots" id="stationDots"></div>
+
+<!-- Scroll hint -->
+<div class="scroll-hint" id="scrollHint">
+  <div class="scroll-hint-text">Scroll</div>
+  <div class="scroll-hint-arrow"></div>
+</div>
+
+<!-- Solid mask behind landscape — hides content scrolling behind terrain -->
+<div class="landscape-mask"></div>
+
+<!-- Content fade zone — blurs content as it approaches landscape -->
+<div class="content-fade"></div>
+
+<!-- Landscape (SVG) — z-index 50, in front of content -->
+<div class="landscape">
+  <div class="landscape-canvas" id="landscapeCanvas">
+    <svg id="landscapeSvg" viewBox="0 0 8000 180" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="groundGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#2a1528" />
+          <stop offset="100%" stop-color="#1e0f1c" />
+        </linearGradient>
+        <linearGradient id="gapGlow" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#fe8c68" stop-opacity="0.5" />
+          <stop offset="100%" stop-color="#fe8c68" stop-opacity="0" />
+        </linearGradient>
+      </defs>
+
+      <!-- Placeholder terrain — will be replaced by custom design -->
+      <path d="M0,80 Q300,60 600,75 Q900,55 1200,65 Q1500,48 1800,58 Q2100,45 2400,55 Q2700,42 3000,50 Q3150,60 3250,85 Q3350,120 3450,140 Q3550,120 3650,85 Q3750,60 3900,48 Q4200,38 4500,42 Q4800,46 5100,50 Q5400,52 5700,48 Q6000,42 6300,45 Q6600,48 6900,42 Q7200,35 7500,24 Q7700,16 8000,10"
+            fill="none" stroke="rgba(101,26,90,0.08)" stroke-width="50" />
+
+      <path id="terrainPath" d="
+        M0,110 L100,110 Q200,108 400,110 Q600,106 800,102 Q900,98 1000,92
+        Q1200,85 1400,80 Q1600,76 1800,72 Q1900,70 2000,68 Q2200,64 2400,66 Q2600,64 2700,62
+        Q2800,60 2900,64 Q3000,60 3100,58 Q3200,66 Q3300,80 3400,110 Q3450,140 L3500,150 L3550,150
+        Q3600,140 3700,110 Q3800,80 3900,66 Q4000,58 4100,52 Q4200,48 4300,44 Q4500,40 Q4600,42 4800,46
+        Q5000,50 Q5200,52 5400,55 Q5500,56 5600,54 Q5700,52 5800,54 Q5900,52 6000,50
+        Q6100,50 6200,52 Q6400,54 Q6500,53 6600,52 Q6700,50 6800,52 Q6900,54 7000,50
+        Q7100,46 7200,42 Q7300,36 7400,30 Q7500,24 7600,18 Q7700,14 7800,10 Q7900,8 8000,6
+      " fill="url(#groundGrad)" stroke="rgba(101,26,90,0.4)" stroke-width="1.5" />
+
+      <path d="
+        M0,110 L100,110 Q200,108 400,110 Q600,106 800,102 Q900,98 1000,92
+        Q1200,85 1400,80 Q1600,76 1800,72 Q1900,70 2000,68 Q2200,64 2400,66 Q2600,64 2700,62
+        Q2800,60 2900,64 Q3000,60 3100,58 Q3200,66 Q3300,80 3400,110 Q3450,140 L3500,150 L3550,150
+        Q3600,140 3700,110 Q3800,80 3900,66 Q4000,58 4100,52 Q4200,48 4300,44 Q4500,40 Q4600,42 4800,46
+        Q5000,50 Q5200,52 5400,55 Q5500,56 5600,54 Q5700,52 5800,54 Q5900,52 6000,50
+        Q6100,50 6200,52 Q6400,54 Q6500,53 6600,52 Q6700,50 6800,52 Q6900,54 7000,50
+        Q7100,46 7200,42 Q7300,36 7400,30 Q7500,24 7600,18 Q7700,14 7800,10 Q7900,8 8000,6
+        L8000,200 L0,200 Z
+      " fill="url(#groundGrad)" />
+
+      <rect x="3380" y="130" width="170" height="50" fill="url(#gapGlow)" />
+
+      <!-- Placeholder elements -->
+      <rect x="120" y="88" width="36" height="22" fill="rgba(139,69,19,0.35)" rx="2" />
+      <polygon points="120,88 138,76 156,88" fill="rgba(139,69,19,0.4)" />
+      <line x1="3360" y1="68" x2="3690" y2="68" stroke="rgba(254,140,104,0.5)" stroke-width="2.5" stroke-dasharray="10,7" />
+      <line x1="7900" y1="8" x2="7900" y2="-18" stroke="rgba(254,140,104,0.7)" stroke-width="2" />
+      <polygon points="7900,-18 7935,-13 7900,-8" fill="rgba(254,140,104,0.6)" />
+    </svg>
+  </div>
+</div>
+
+<!-- Pony (placeholder) -->
+<div class="pony-container" id="pony">
+  <div class="pony">🐴</div>
+  <div class="pony-stick"></div>
+</div>
+
+<!-- Toast notification -->
+<div class="toast" id="toast"></div>
+
+<div class="scroll-wrapper">
+
+  <!-- STASJON 1: Stallen / Intro -->
+  <section class="intro-section" data-station="Stallen">
+    <div class="section-inner">
+      <div class="label reveal">Debrief</div>
+      <h1 class="reveal">Sit Trening</h1>
+      <p class="subtitle reveal">Helårlig kommunikasjonskonsept for trening, aktivitet og idrett blant studenter i Trondheim, Gjøvik og Ålesund.</p>
+    </div>
+  </section>
+
+  <!-- STASJON 2: Oppdraget -->
+  <section data-station="Oppdraget">
+    <div class="section-inner">
+      <div class="label reveal">Slik forstår vi oppgaven</div>
+      <h2 class="reveal">Mer enn et treningssenter</h2>
+      <p class="subtitle reveal">Sit vil gå fra å være et treningssenter til å bli forstått som en helhetlig velferdsaktør som bruker aktivitet som virkemiddel.</p>
+      <div class="fact-grid">
+        <div class="fact-card reveal">
+          <div class="fact-number" data-count="18700" data-format="space">0</div>
+          <div class="fact-label">Medlemmer per måned (målet)</div>
+        </div>
+        <div class="fact-card reveal">
+          <div class="fact-number" data-count="38000" data-format="space">0</div>
+          <div class="fact-label">Studenter i målgruppa</div>
+        </div>
+        <div class="fact-card reveal">
+          <div class="fact-number" data-count="49" data-suffix="%">0</div>
+          <div class="fact-label">Penetrasjon som trengs</div>
+        </div>
+        <div class="fact-card reveal">
+          <div class="fact-number" data-count="190" data-suffix="k">0</div>
+          <div class="fact-label">Budsjett for konseptutvikling</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STASJON 3: Leveransen -->
+  <section data-station="Leveransen">
+    <div class="section-inner">
+      <div class="label reveal">Byråkonkurranse, tre byråer</div>
+      <h2 class="reveal">Hva vi skal levere</h2>
+      <p class="subtitle reveal">Sit har invitert tre byråer til pitch. Her er det de forventer av oss innen 16. mars.</p>
+      <div class="fact-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+        <div class="fact-card deliverable-card reveal">
+          <div class="fact-number">Strategisk retning</div>
+          <div class="fact-label">Overordnet plattform for kommunikasjonen</div>
+          <div class="card-tooltip">En tydelig strategisk overbygning som samler all kommunikasjon under én paraply.</div>
+        </div>
+        <div class="fact-card deliverable-card reveal">
+          <div class="fact-number">Konsept + visuell retning</div>
+          <div class="fact-label">Tre delkonsepter + samlende rammeverk</div>
+          <div class="card-tooltip">Kreative konseptretninger som viser hvordan strategien kan leve visuelt og verbalt.</div>
+        </div>
+        <div class="fact-card deliverable-card reveal">
+          <div class="fact-number">Bildebruk</div>
+          <div class="fact-label">Prinsipper for visuell stil</div>
+          <div class="card-tooltip">Retningslinjer for fotostil, illustrasjon og visuelt uttrykk i kampanjen.</div>
+        </div>
+        <div class="fact-card deliverable-card reveal">
+          <div class="fact-number">Budskapsretning</div>
+          <div class="fact-label">Tone, språk og arkitektur</div>
+          <div class="card-tooltip">Hvordan Sit skal snakke til studentene, fra overskrifter til CTA-er.</div>
+        </div>
+        <div class="fact-card deliverable-card reveal">
+          <div class="fact-number">Augustkampanje</div>
+          <div class="fact-label">Forslag til digital hoveddriver</div>
+          <div class="card-tooltip">Konkret kampanjeforslag for semesterstart, den viktigste rekrutteringsperioden.</div>
+        </div>
+        <div class="fact-card deliverable-card reveal">
+          <div class="fact-number">Prisestimat</div>
+          <div class="fact-label">For ferdigutvikling av konsept</div>
+          <div class="card-tooltip">Hva det vil koste å ta konseptet fra pitch til ferdig produksjonsklart materiale.</div>
+        </div>
+      </div>
+      <p class="subtitle reveal" style="margin-top: 24px; font-style: italic; opacity: 0.7;">Sit og valgt byrå samarbeider om endelig budskapsformulering. Pitchen viser retning, ikke ferdig materiale.</p>
+    </div>
+  </section>
+
+  <!-- STASJON 4: Innsikt -->
+  <section data-station="Innsikt">
+    <div class="section-inner">
+      <div class="label reveal">Hva vi fant</div>
+      <h2 class="reveal">Verden utenfor briefen</h2>
+      <div class="insight-stack">
+        <div class="insight reveal-left">
+          <div class="insight-quote">78% av Gen Z oppgir psykisk helse som viktigste grunn til å trene, foran utseende og fysisk form.</div>
+          <div class="insight-source"><a href="https://insider.fitt.co/gen-z-drives-strength-social-workouts/" target="_blank">Fitt Insider, 2026</a></div>
+        </div>
+        <div class="insight reveal-left">
+          <div class="insight-quote">81% av Gen Z som trener deltar i gruppetrening. Trening er en sosial aktivitet, ikke individuell.</div>
+          <div class="insight-source"><a href="https://civicscience.com/fitness-trends-of-2026/" target="_blank">CivicScience, 2026</a></div>
+        </div>
+        <div class="insight reveal-left">
+          <div class="insight-quote">1 av 3 norske studenter rapporterer alvorlige psykiske plager. Fysisk aktivitet er et av de best dokumenterte tiltakene.</div>
+          <div class="insight-source"><a href="https://studenthelse.no/" target="_blank">SHoT-undersøkelsen</a></div>
+        </div>
+        <div class="insight reveal-left">
+          <div class="insight-quote">Sit har økt prisene 24%. Men de er fortsatt billigere enn alle kommersielle alternativer. Pris er ikke problemet.</div>
+          <div class="insight-source"><a href="https://www.underdusken.no/na-blir-det-24-prosent-dyrere-a-dra-pa-sits-treningssentre/319466" target="_blank">Under Dusken</a></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STASJON 5: Gapet -->
+  <section data-station="Gapet">
+    <div class="section-inner">
+      <div class="label reveal">Gap-analyse</div>
+      <h2 class="reveal">Avstanden mellom der vi er<br>og dit vi skal</h2>
+      <div class="gap-container">
+        <div class="gap-side left reveal-left">
+          <div class="gap-label">I dag</div>
+          <div class="gap-text">Sit oppfattes som et treningssenter. Idretts- og aktivitetstilbudet er nærmest usynlig. De inaktive studentene har ikke et forhold til Sit i det hele tatt.</div>
+        </div>
+        <div class="gap-side right reveal-right">
+          <div class="gap-label">Målet</div>
+          <div class="gap-text">49% av alle studenter er aktive medlemmer. Sit er forstått som inngangen til alt som beveger studenter: trening, idrett og aktivitet.</div>
+        </div>
+      </div>
+      <div class="barriers-label reveal">Hva som står i veien</div>
+      <div class="barriers-row">
+        <div class="barrier reveal">
+          <div class="barrier-name">Oppfatning</div>
+          <div class="barrier-tooltip">Studentene tror Sit = treningssenter. Tradisjonell kommunikasjon med svette kropper og personlige rekorder forsterker dette bildet.</div>
+        </div>
+        <div class="barrier reveal">
+          <div class="barrier-name">Kjennskap</div>
+          <div class="barrier-tooltip">Idrett og aktivitetstilbudet er Sits sterkeste differensiator, men har lavest kjennskap. Studentene vet ikke hva de går glipp av.</div>
+        </div>
+        <div class="barrier reveal">
+          <div class="barrier-name">Tilhørighet</div>
+          <div class="barrier-tooltip">Inaktive studenter ser seg ikke som «treningsfolk». De føler ikke tilbudet er for dem, selv om det faktisk er det.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STASJON 6: Problemdefinisjonen (THE REVEAL) -->
+  <section class="reveal-section" data-station="Kjernen">
+    <div>
+      <div class="label reveal" style="text-align:center;" id="revealLabel">Problemet vi skal løse</div>
+      <div class="problem-text reveal-scale" id="problemReveal">
+        Sit har Norges bredeste tilbud for å gjøre studenter aktive, men <span class="highlight">kommuniserer som om de bare er et treningssenter</span>.
+      </div>
+    </div>
+  </section>
+
+  <!-- STASJON 7: Strategiske spor -->
+  <section data-station="Muligheter">
+    <div class="section-inner">
+      <div class="label reveal">Veier videre</div>
+      <h2 class="reveal">Fire strategiske retninger</h2>
+      <p class="subtitle reveal">Klikk for å utforske. Marker gjerne hvilke retninger som appellerer.</p>
+      <div class="tracks">
+        <div class="track reveal">
+          <div class="track-header" onclick="toggleTrack(this)">
+            <div>
+              <div class="track-name">Finn din greie</div>
+              <div class="track-desc">Vis det absurde mangfoldet av ting man kan gjøre med Sit.</div>
+            </div>
+            <div class="track-toggle">+</div>
+          </div>
+          <div class="track-body">
+            <div class="track-content">
+              <h4>Hvorfor dette kan fungere</h4>
+              Ved å vise bredden, fra volleyball til fjelltur til yoga, signaliserer vi at det finnes noe for alle. I Byron Sharp-termer utvider dette Sits category entry points dramatisk.
+              <h4>Referanse</h4>
+              «This Girl Can» (Sport England) normaliserte alle former for bevegelse og fikk 3 millioner inaktive kvinner i gang.
+              <h4>Risiko</h4>
+              Kan bli en «vi har alt»-kommunikasjon som er bred men tom. Må forankres i ekte studenthistorier.
+              <button class="track-fav" onclick="toggleFav(event, this, 'Finn din greie')">Denne liker jeg</button>
+            </div>
+          </div>
+        </div>
+        <div class="track reveal">
+          <div class="track-header" onclick="toggleTrack(this)">
+            <div>
+              <div class="track-name">Din studietid er mer enn studier</div>
+              <div class="track-desc">Aktivitet er ikke et ekstra abonnement, det ER studietiden.</div>
+            </div>
+            <div class="track-toggle">+</div>
+          </div>
+          <div class="track-body">
+            <div class="track-content">
+              <h4>Hvorfor dette kan fungere</h4>
+              1 av 3 studenter sliter psykisk. Ved å ramme inn aktivitet som en del av studentlivet, knytter vi oss til noe større enn treningsbransjen.
+              <h4>Referanse</h4>
+              «Fitness Buddies»-programmet ved amerikanske universiteter ga bedre trivsel og lavere stress.
+              <h4>Risiko</h4>
+              Kan bli for «velferds-aktig» og miste energi. Må balansere varme med attraktivitet.
+              <button class="track-fav" onclick="toggleFav(event, this, 'Studietid')">Denne liker jeg</button>
+            </div>
+          </div>
+        </div>
+        <div class="track reveal">
+          <div class="track-header" onclick="toggleTrack(this)">
+            <div>
+              <div class="track-name">Treningssenteret er det minste vi gjør</div>
+              <div class="track-desc">Modig reposisjonering. Nedtón senteret, la resten skinne.</div>
+            </div>
+            <div class="track-toggle">+</div>
+          </div>
+          <div class="track-body">
+            <div class="track-content">
+              <h4>Hvorfor dette kan fungere</h4>
+              Du kan ikke reposisjonere med tilleggsinformasjon. Du må gjøre noe som bryter forventningen. Denne tilnærmingen er «modig», en av Sits egne verdier.
+              <h4>Referanse</h4>
+              Gymshark #Gymshark66 solgte ikke produkter i kampanjen, men bygde community. 45 millioner visninger.
+              <h4>Risiko</h4>
+              Kan møte motstand internt hos Sit. Treningssenter er største inntektskilde.
+              <button class="track-fav" onclick="toggleFav(event, this, 'Det minste vi gjør')">Denne liker jeg</button>
+            </div>
+          </div>
+        </div>
+        <div class="track reveal">
+          <div class="track-header" onclick="toggleTrack(this)">
+            <div>
+              <div class="track-name">Start med en venn</div>
+              <div class="track-desc">Gjør det sosiale til inngangen. Tilhørighet før prestasjon.</div>
+            </div>
+            <div class="track-toggle">+</div>
+          </div>
+          <div class="track-body">
+            <div class="track-content">
+              <h4>Hvorfor dette kan fungere</h4>
+              Tilhørighetsbarrieren kan løses med sosiale mekanikker. 1 av 4 kvinner sa at tilstedeværelsen av noen som lignet dem ville gjort aktivitet mer innbydende.
+              <h4>Referanse</h4>
+              Strava Clubs har firedoblet seg. Grupper som løper og sykler sammen som sosial infrastruktur.
+              <h4>Risiko</h4>
+              Buddy-mekanikker kan bli gimmicky. Kan ekskludere de som ikke har en venn.
+              <button class="track-fav" onclick="toggleFav(event, this, 'Start med en venn')">Denne liker jeg</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STASJON 8: Spørsmål -->
+  <section data-station="Spørsmål">
+    <div class="section-inner">
+      <div class="label reveal">Vi lurer på</div>
+      <h2 class="reveal">Noen ting vi gjerne vil vite</h2>
+      <p class="subtitle reveal">Skriv gjerne svarene her. De sendes til oss når du er ferdig.</p>
+      <div class="questions">
+        <div class="question reveal">
+          <div class="question-text">Hvor mange aktive medlemmer har Sit per i dag, og hva er trenden?</div>
+          <textarea placeholder="Skriv her..."></textarea>
+        </div>
+        <div class="question reveal">
+          <div class="question-text">Hva vet dere om hvorfor inaktive studenter ikke trener?</div>
+          <textarea placeholder="Skriv her..."></textarea>
+        </div>
+        <div class="question reveal">
+          <div class="question-text">Hva er mediebudsjettet for augustkampanjen, utover konseptutvikling?</div>
+          <textarea placeholder="Skriv her..."></textarea>
+        </div>
+        <div class="question reveal">
+          <div class="question-text">Hvor modige tør Sit å være? Er organisasjonen klar for å reposisjonere seg?</div>
+          <textarea placeholder="Skriv her..."></textarea>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STASJON 9: Neste steg -->
+  <section class="cta-section" data-station="Neste steg">
+    <div class="section-inner">
+      <div class="label reveal">Takk for turen</div>
+      <h2 class="reveal">Vi gleder oss til å jobbe videre med dette.</h2>
+      <p class="subtitle reveal" style="margin: 0 auto;">Har du tanker, svar eller favoritter? Trykk på knappen under, så samler vi alt og tar det med videre inn i idéfasen.</p>
+      <button class="cta-button reveal" onclick="submitFeedback()">
+        Send dine tanker til Superponni
+      </button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  // --- STARS ---
+  const starsEl = document.getElementById('stars');
+  for (let i = 0; i < 100; i++) {
+    const star = document.createElement('div');
+    star.className = 'star';
+    star.style.left = Math.random() * 100 + '%';
+    star.style.top = Math.random() * 55 + '%';
+    star.style.animationDelay = Math.random() * 6 + 's';
+    star.style.animationDuration = (3 + Math.random() * 5) + 's';
+    const size = (0.8 + Math.random() * 1.8) + 'px';
+    star.style.width = size;
+    star.style.height = size;
+    starsEl.appendChild(star);
+  }
+
+  // --- AMBIENT PARTICLES ---
+  const particlesEl = document.getElementById('particles');
+  const particleColors = ['rgba(254,140,104,0.4)', 'rgba(220,250,224,0.3)', 'rgba(247,236,255,0.3)'];
+  for (let i = 0; i < 15; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.bottom = '-20px';
+    p.style.width = p.style.height = (2 + Math.random() * 4) + 'px';
+    p.style.background = particleColors[Math.floor(Math.random() * particleColors.length)];
+    p.style.animationDuration = (8 + Math.random() * 12) + 's';
+    p.style.animationDelay = Math.random() * 10 + 's';
+    particlesEl.appendChild(p);
+  }
+
+  // --- MOONSHINE ON CARDS ---
+  // Dynamic moonlight: the glow position on each card shifts based on
+  // where the card is relative to the moon (fixed top-right).
+  const moonEl = document.querySelector('.moon');
+  const moonlitCards = [];
+
+  document.querySelectorAll('.insight, .fact-card, .barrier, .track, .question, .gap-side').forEach(el => {
+    el.classList.add('moonlit');
+    const shine = document.createElement('div');
+    shine.className = 'moonshine';
+    el.appendChild(shine);
+    moonlitCards.push({ el, shine });
+  });
+
+  function updateMoonshine() {
+    const moonRect = moonEl.getBoundingClientRect();
+    const moonCx = moonRect.left + moonRect.width / 2;
+    const moonCy = moonRect.top + moonRect.height / 2;
+
+    for (const { el, shine } of moonlitCards) {
+      const rect = el.getBoundingClientRect();
+      // Skip cards not in viewport
+      if (rect.bottom < -100 || rect.top > window.innerHeight + 100) continue;
+
+      // Vector from card center to moon
+      const cardCx = rect.left + rect.width / 2;
+      const cardCy = rect.top + rect.height / 2;
+      const dx = moonCx - cardCx;
+      const dy = moonCy - cardCy;
+
+      // Convert to percentage position on the card where light enters
+      // Moon is to the right and above — light enters from that direction
+      const mlX = Math.min(100, Math.max(0, 50 + (dx / rect.width) * 40));
+      const mlY = Math.min(100, Math.max(0, 50 + (dy / rect.height) * 40));
+
+      shine.style.setProperty('--ml-x', mlX.toFixed(1) + '%');
+      shine.style.setProperty('--ml-y', mlY.toFixed(1) + '%');
+
+      // Adjust edge highlight intensity based on angle
+      // When moon is more above: top edge brighter, right edge dimmer
+      // When moon is more to the side: right edge brighter, top edge dimmer
+      const angle = Math.atan2(-dy, dx); // 0 = right, PI/2 = up
+      const topStrength = Math.max(0, Math.sin(angle));    // stronger when moon is above
+      const rightStrength = Math.max(0, Math.cos(angle));  // stronger when moon is to the right
+
+      // Edge opacities (subtle range 0.04 — 0.16)
+      shine.style.setProperty('--ml-edge-r', (0.04 + topStrength * 0.12).toFixed(3));
+      shine.style.setProperty('--ml-edge-b', (0.04 + rightStrength * 0.10).toFixed(3));
+
+      // Edge lengths (how far the highlight extends)
+      shine.style.setProperty('--ml-top-w', (25 + topStrength * 40).toFixed(0) + '%');
+      shine.style.setProperty('--ml-right-h', (25 + rightStrength * 40).toFixed(0) + '%');
+    }
+  }
+
+  // Run on scroll (throttled via rAF) and on load
+  let moonTicking = false;
+  window.addEventListener('scroll', () => {
+    if (!moonTicking) {
+      requestAnimationFrame(() => { updateMoonshine(); moonTicking = false; });
+      moonTicking = true;
+    }
+  }, { passive: true });
+  updateMoonshine();
+
+  // --- SHOOTING STARS (subtle, occasional) ---
+  function createShootingStar() {
+    const star = document.createElement('div');
+    star.className = 'shooting-star';
+    const startX = Math.random() * 60 + 10;
+    const startY = Math.random() * 30 + 5;
+    const angle = 20 + Math.random() * 30;
+    star.style.left = startX + '%';
+    star.style.top = startY + '%';
+    star.style.setProperty('--angle', angle + 'deg');
+    star.style.width = (50 + Math.random() * 60) + 'px';
+    star.style.animation = `shootingStar ${1.2 + Math.random() * 0.6}s ease-out forwards`;
+    document.body.appendChild(star);
+    star.addEventListener('animationend', () => star.remove());
+  }
+
+  // Random shooting star every 6-14 seconds
+  function scheduleShootingStar() {
+    const delay = 6000 + Math.random() * 8000;
+    setTimeout(() => {
+      createShootingStar();
+      scheduleShootingStar();
+    }, delay);
+  }
+  scheduleShootingStar();
+
+  // --- STATION DOTS ---
+  const sections = document.querySelectorAll('section');
+  const dotsContainer = document.getElementById('stationDots');
+  sections.forEach(() => {
+    const dot = document.createElement('div');
+    dot.className = 'station-dot';
+    dotsContainer.appendChild(dot);
+  });
+  const dots = dotsContainer.querySelectorAll('.station-dot');
+
+  // --- LANDSCAPE & PONY ---
+  const pony = document.getElementById('pony');
+  const ponyEmoji = pony.querySelector('.pony');
+  const progressBar = document.getElementById('progressBar');
+  const stationLabel = document.getElementById('stationLabel');
+  const landscapeSvg = document.getElementById('landscapeSvg');
+  const scrollHint = document.getElementById('scrollHint');
+  let lastScroll = 0;
+  let hasScrolled = false;
+
+  const terrainPoints = [
+    [0, 110], [400, 110], [800, 102], [1000, 92],
+    [1400, 80], [1800, 72], [2000, 68],
+    [2400, 66], [2700, 62], [2900, 64], [3100, 58],
+    [3200, 66], [3300, 80], [3400, 110], [3450, 140], [3500, 150], [3550, 150],
+    [3600, 140], [3700, 110], [3800, 80], [3900, 66],
+    [4100, 52], [4300, 44], [4500, 40], [4800, 46],
+    [5000, 50], [5400, 55], [5600, 54], [5800, 54], [6000, 50],
+    [6400, 54], [6800, 52], [7000, 50],
+    [7200, 42], [7400, 30], [7600, 18], [7800, 10], [8000, 6]
+  ];
+
+  function getTerrainY(xPos) {
+    for (let i = 0; i < terrainPoints.length - 1; i++) {
+      if (xPos >= terrainPoints[i][0] && xPos <= terrainPoints[i + 1][0]) {
+        const t = (xPos - terrainPoints[i][0]) / (terrainPoints[i + 1][0] - terrainPoints[i][0]);
+        return terrainPoints[i][1] + t * (terrainPoints[i + 1][1] - terrainPoints[i][1]);
+      }
+    }
+    return terrainPoints[terrainPoints.length - 1][1];
+  }
+
+  const SVG_WIDTH = 8000;
+
+  // --- COUNT-UP ANIMATION ---
+  const countedElements = new Set();
+
+  function animateCount(el) {
+    if (countedElements.has(el)) return;
+    countedElements.add(el);
+
+    const target = parseInt(el.dataset.count);
+    const suffix = el.dataset.suffix || '';
+    const format = el.dataset.format;
+    const duration = 1200;
+    const start = performance.now();
+
+    function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+
+    function formatNumber(n) {
+      if (format === 'space') {
+        return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+      }
+      return n.toString();
+    }
+
+    function step(now) {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const current = Math.round(easeOutCubic(progress) * target);
+      el.textContent = formatNumber(current) + suffix;
+      if (progress < 1) requestAnimationFrame(step);
+    }
+
+    requestAnimationFrame(step);
+  }
+
+  // --- SCROLL-TRIGGERED REVEAL with stagger ---
+  function onScroll() {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = Math.min(Math.max(scrollTop / docHeight, 0), 1);
+
+    if (!hasScrolled && scrollTop > 50) {
+      hasScrolled = true;
+      scrollHint.classList.add('hidden');
+    }
+
+    stationLabel.classList.toggle('show', progress > 0.05);
+    progressBar.style.width = (progress * 100) + '%';
+
+    // --- PONY ---
+    const ponyScreenX = 5 + progress * 85;
+    pony.style.left = ponyScreenX + '%';
+
+    const ponySvgX = progress * SVG_WIDTH;
+    const viewWidth = 1400;
+    const svgOffset = Math.max(0, Math.min(ponySvgX - viewWidth * (ponyScreenX / 100), SVG_WIDTH - viewWidth));
+    landscapeSvg.setAttribute('viewBox', `${svgOffset} -25 ${viewWidth} 225`);
+
+    const terrainY = getTerrainY(ponySvgX);
+    const landscapeHeight = 200;
+    const ponyBottomOffset = ((200 - terrainY) / 225) * landscapeHeight;
+    const bounceY = Math.sin(scrollTop * 0.035) * 5;
+    pony.style.bottom = (ponyBottomOffset + 12 + bounceY) + 'px';
+
+    const scrollDelta = scrollTop - lastScroll;
+    const tiltDir = scrollDelta > 0 ? -6 : scrollDelta < 0 ? 6 : 0;
+    ponyEmoji.style.transform = `rotate(${tiltDir}deg)`;
+    lastScroll = scrollTop;
+
+    // --- SECTION TRACKING ---
+    let activeStationIdx = 0;
+    sections.forEach((section, idx) => {
+      const rect = section.getBoundingClientRect();
+
+      if (rect.top < window.innerHeight * 0.75 && rect.bottom > 0) {
+        activeStationIdx = idx;
+        const label = section.dataset.station;
+        if (label) stationLabel.textContent = label;
+      }
+    });
+
+    dots.forEach((dot, i) => {
+      dot.classList.toggle('active', i === activeStationIdx);
+    });
+
+    // --- REVEAL ANIMATIONS (staggered per element) ---
+    document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale').forEach(el => {
+      const rect = el.getBoundingClientRect();
+      // Trigger when element is 80% from top of viewport (early trigger)
+      if (rect.top < window.innerHeight * 0.85 && rect.bottom > 0) {
+        // Stagger based on sibling index within parent
+        const parent = el.parentElement;
+        const siblings = Array.from(parent.children).filter(c =>
+          c.classList.contains('reveal') || c.classList.contains('reveal-left') ||
+          c.classList.contains('reveal-right') || c.classList.contains('reveal-scale')
+        );
+        const idx = siblings.indexOf(el);
+        const delay = idx * 100;
+
+        setTimeout(() => {
+          el.classList.add('visible');
+        }, delay);
+      }
+    });
+
+    // --- COUNT-UP for fact numbers ---
+    document.querySelectorAll('.fact-number[data-count]').forEach(el => {
+      const rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight * 0.9) {
+        animateCount(el);
+      }
+    });
+
+    // --- PROBLEM REVEAL ---
+    const problemReveal = document.getElementById('problemReveal');
+    if (problemReveal) {
+      const revealSection = problemReveal.closest('section');
+      const rect = revealSection.getBoundingClientRect();
+      if (rect.top < window.innerHeight * 0.5) {
+        revealSection.classList.add('glowing');
+      }
+    }
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  setTimeout(onScroll, 100);
+
+  // Trigger intro elements immediately
+  setTimeout(() => {
+    document.querySelectorAll('.intro-section .reveal').forEach((el, i) => {
+      setTimeout(() => el.classList.add('visible'), 300 + i * 200);
+    });
+  }, 200);
+
+  // --- TRACK TOGGLE (accordion: only one open at a time) ---
+  function toggleTrack(header) {
+    const track = header.closest('.track');
+    const isOpen = track.classList.contains('open');
+
+    // Close all tracks first
+    document.querySelectorAll('.track.open').forEach(t => {
+      t.classList.remove('open');
+    });
+
+    // Open clicked one if it wasn't already open
+    if (!isOpen) {
+      track.classList.add('open');
+    }
+  }
+
+  // --- FAVORITES ---
+  const favorites = new Set();
+
+  function toggleFav(e, btn, name) {
+    e.stopPropagation();
+    if (favorites.has(name)) {
+      favorites.delete(name);
+      btn.classList.remove('selected');
+      btn.textContent = 'Denne liker jeg';
+    } else {
+      favorites.add(name);
+      btn.classList.add('selected');
+      btn.textContent = 'Markert!';
+      showToast('Notert: «' + name + '»');
+    }
+  }
+
+  // --- TOAST ---
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2200);
+  }
+
+  // --- SUBMIT ---
+  function submitFeedback() {
+    const answers = [];
+    document.querySelectorAll('.question').forEach(q => {
+      const question = q.querySelector('.question-text').textContent;
+      const answer = q.querySelector('textarea').value;
+      if (answer.trim()) answers.push({ question, answer });
+    });
+
+    const data = {
+      favorites: [...favorites],
+      answers,
+      timestamp: new Date().toISOString()
+    };
+
+    console.log('Feedback:', JSON.stringify(data, null, 2));
+    showToast('Takk! Vi har mottatt tankene dine.');
+
+    const btn = document.querySelector('.cta-button');
+    btn.textContent = 'Sendt!';
+    btn.style.background = 'var(--tawny)';
+    btn.style.pointerEvents = 'none';
+  }
+</script>
+
+</body>
+</html>
