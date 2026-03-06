@@ -53,7 +53,7 @@
 
   body {
     font-family: 'Inter', system-ui, sans-serif;
-    background: var(--bg);
+    background: #0a0408;
     color: var(--text);
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
@@ -141,21 +141,33 @@
   }
 
   .pony-stick {
-    width: 3px;
+    width: 6px;
     height: 36px;
-    background: linear-gradient(to bottom, #a0704f, #7a5535);
     margin: 0 auto;
-    border-radius: 2px;
-    box-shadow: 1px 0 3px rgba(0,0,0,0.3);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .pony-stick img {
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
   }
 
   .pony {
-    font-size: 44px;
+    width: 75px;
+    height: 75px;
     text-align: center;
     line-height: 1;
     filter: drop-shadow(0 4px 16px rgba(0,0,0,0.5));
     transform-origin: center bottom;
-    transition: transform 0.12s ease-out;
+    transition: transform 0.15s ease-out;
+  }
+
+  .pony img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
   }
 
   /* --- PROGRESS BAR --- */
@@ -570,25 +582,16 @@
 
   .problem-text .highlight {
     color: var(--salmon);
-    position: relative;
     font-style: italic;
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 4px;
+    text-decoration-thickness: 2px;
+    transition: text-decoration-color 1s ease 0.8s;
   }
 
-  .problem-text .highlight::after {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, var(--salmon), transparent);
-    transform: scaleX(0);
-    transition: transform 1s ease 0.8s;
-    transform-origin: left;
-  }
-
-  .problem-text.visible .highlight::after {
-    transform: scaleX(1);
+  .problem-text.visible .highlight {
+    text-decoration-color: rgba(254,140,104,0.5);
   }
 
   /* --- STRATEGIC TRACKS --- */
@@ -1016,6 +1019,26 @@
     50% { transform: translate(-50%, -50%) scale(1.08); opacity: 0.6; }
   }
 
+  /* --- PAGE REVEAL — dark overlay with expanding circular hole from moon --- */
+  .page-wrap {
+    background: var(--bg);
+    min-height: 100vh;
+  }
+  .iris-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    pointer-events: none;
+    background: radial-gradient(
+      circle at calc(100% - 100px) 100px,
+      transparent var(--iris-size, 0%),
+      #0a0408 var(--iris-size, 0%)
+    );
+  }
+  .iris-overlay.done {
+    display: none;
+  }
+
   /* --- MOONLIGHT ON CARDS ---
      Dynamic light from the moon. The glow position updates based on the
      card's position relative to the moon, using CSS custom properties
@@ -1129,6 +1152,9 @@
 </head>
 <body>
 
+<div class="iris-overlay" id="irisOverlay"></div>
+<div class="page-wrap">
+
 <div class="progress-bar" id="progressBar"></div>
 <a class="logo-link" href="https://superponni.no" target="_blank"><img class="logo" src="logo.svg" alt="Superponni"></a>
 <div class="station-indicator" id="stationLabel"></div>
@@ -1209,10 +1235,9 @@
   </div>
 </div>
 
-<!-- Pony (placeholder) -->
+<!-- Pony -->
 <div class="pony-container" id="pony">
-  <div class="pony">🐴</div>
-  <div class="pony-stick"></div>
+  <div class="pony"><img src="Hest.png" alt="Superponni"></div>
 </div>
 
 <!-- Toast notification -->
@@ -1530,6 +1555,33 @@
     particlesEl.appendChild(p);
   }
 
+  // --- IRIS REVEAL (rAF-driven, no clip-path) ---
+  const irisOverlay = document.getElementById('irisOverlay');
+  const irisDuration = 2000;
+  const irisDelay = 500;
+  let irisStart = null;
+
+  function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+
+  function animateIris(timestamp) {
+    if (!irisStart) irisStart = timestamp;
+    const elapsed = timestamp - irisStart;
+    if (elapsed < irisDelay) {
+      requestAnimationFrame(animateIris);
+      return;
+    }
+    const progress = Math.min((elapsed - irisDelay) / irisDuration, 1);
+    const eased = easeOutCubic(progress);
+    const size = eased * 160;
+    irisOverlay.style.setProperty('--iris-size', size + '%');
+    if (progress < 1) {
+      requestAnimationFrame(animateIris);
+    } else {
+      irisOverlay.classList.add('done');
+    }
+  }
+  requestAnimationFrame(animateIris);
+
   // --- MOONSHINE ON CARDS ---
   // Dynamic moonlight: the glow position on each card shifts based on
   // where the card is relative to the moon (fixed top-right).
@@ -1725,11 +1777,18 @@
     const landscapeHeight = 200;
     const ponyBottomOffset = ((200 - terrainY) / 225) * landscapeHeight;
     const bounceY = Math.sin(scrollTop * 0.035) * 5;
-    pony.style.bottom = (ponyBottomOffset + 12 + bounceY) + 'px';
+    pony.style.bottom = (ponyBottomOffset - 10 + bounceY) + 'px';
 
-    const scrollDelta = scrollTop - lastScroll;
-    const tiltDir = scrollDelta > 0 ? -6 : scrollDelta < 0 ? 6 : 0;
-    ponyEmoji.style.transform = `rotate(${tiltDir}deg)`;
+    // Rotate pony to follow terrain slope (clamped, gentle)
+    const lookAhead = 150;
+    const terrainYAhead = getTerrainY(ponySvgX + lookAhead);
+    const terrainYBehind = getTerrainY(ponySvgX - lookAhead);
+    const slope = (terrainYAhead - terrainYBehind) / (lookAhead * 2);
+    const rawAngle = Math.atan(slope) * (180 / Math.PI);
+    const terrainAngle = Math.max(-12, Math.min(12, rawAngle));
+    // Fade in rotation gradually so it starts at 0
+    const rotBlend = Math.min(progress / 0.05, 1);
+    ponyEmoji.style.transform = `rotate(${terrainAngle * rotBlend}deg)`;
     lastScroll = scrollTop;
 
     // --- SECTION TRACKING ---
@@ -1864,5 +1923,6 @@
   }
 </script>
 
+</div><!-- /page-wrap -->
 </body>
 </html>
