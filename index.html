@@ -2,7 +2,8 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1F101D">
 <title>Debrief — Sit Trening</title>
 <style>
   /* --- FONTS --- */
@@ -53,7 +54,7 @@
 
   body {
     font-family: 'Inter', system-ui, sans-serif;
-    background: #0a0408;
+    background: #1F101D;
     color: var(--text);
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
@@ -1165,18 +1166,23 @@
   /* ====== MOBILE ====== */
   @media (max-width: 768px) {
 
-    /* Landskap og masker */
+    /* Landskap og masker — inkluder safe-area for Safari URL-bar */
     .landscape,
-    .landscape-mask { height: 140px; }
-    .content-fade { bottom: 120px; height: 80px; }
+    .landscape-mask {
+      height: calc(140px + env(safe-area-inset-bottom, 0px));
+    }
+    .content-fade {
+      bottom: calc(120px + env(safe-area-inset-bottom, 0px));
+      height: 80px;
+    }
 
-    /* Section padding */
+    /* Section padding — ekstra plass for Safari URL-bar */
     section,
-    .reveal-section { padding: 80px 20px 160px; }
+    .reveal-section { padding: 80px 20px calc(160px + env(safe-area-inset-bottom, 0px)); }
 
     /* Toast og scroll-hint */
-    .toast { bottom: 150px; }
-    .scroll-hint { bottom: 150px; }
+    .toast { bottom: calc(150px + env(safe-area-inset-bottom, 0px)); }
+    .scroll-hint { bottom: calc(150px + env(safe-area-inset-bottom, 0px)); }
 
     /* Textarea — forhindrer iOS zoom */
     .question textarea { font-size: 16px; }
@@ -1217,7 +1223,10 @@
     .logo { height: 16px; }
 
     /* Station dots */
-    .station-dots { gap: 10px; }
+    .station-dots {
+      gap: 10px;
+      bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+    }
     .station-dot { width: 5px; height: 5px; }
 
     /* GAP-analyse — stakk vertikalt */
