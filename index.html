@@ -980,10 +980,21 @@
     height: 60px;
     border-radius: 50%;
     background: radial-gradient(circle at 38% 35%, #fffef5 0%, #f0e8d0 30%, #d4c9a8 55%, #c4b899 100%);
-    z-index: 3;
-    pointer-events: auto;
-    cursor: pointer;
+    z-index: 0;
+    pointer-events: none;
     animation: moonPulse 8s ease-in-out infinite;
+  }
+
+  /* Usynlig klikkflate over månen — høy z-index men transparent */
+  .moon-click {
+    position: fixed;
+    top: 50px;
+    right: 50px;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    z-index: 101;
+    cursor: pointer;
   }
 
   /* --- PONY SPEECH --- */
@@ -1237,6 +1248,9 @@
       right: 30px;
     }
 
+    /* Måne klikkflate */
+    .moon-click { top: 35px; right: 15px; width: 70px; height: 70px; }
+
     /* Ponni snakkeboble */
     .pony-speech-text { font-size: 0.85rem; }
     .pony-speech-line { height: 22px; }
@@ -1396,6 +1410,7 @@
 
 <!-- Moon -->
 <div class="moon"></div>
+<div class="moon-click" id="moonClick"></div>
 
 <!-- Particles -->
 <div class="particles" id="particles"></div>
@@ -2194,7 +2209,7 @@
     }, 3000);
   }
 
-  document.querySelector('.moon').addEventListener('click', showPonySpeech);
+  document.getElementById('moonClick').addEventListener('click', showPonySpeech);
 
   // --- SUBMIT ---
   function submitFeedback() {
