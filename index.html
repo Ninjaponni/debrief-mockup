@@ -1220,8 +1220,8 @@
     .logo-link { top: 16px; left: 16px; }
     .logo { height: 16px; }
 
-    /* Station dots */
-    .station-dots { gap: 10px; }
+    /* Station dots — flytt opp over iOS URL-bar (~50px) */
+    .station-dots { gap: 10px; bottom: 70px; }
     .station-dot { width: 5px; height: 5px; }
 
     /* GAP-analyse — stakk vertikalt */
@@ -1304,6 +1304,9 @@
     .track-header { padding: 20px; }
     .track-content { padding: 0 20px 20px; }
     .track.open .track-body { max-height: 900px; }
+
+    /* CTA-seksjon — ekstra bunn-padding for å holde innhold over URL-bar */
+    .cta-section { padding-bottom: 280px !important; }
 
     /* CTA-knapp */
     .cta-button { width: 100%; justify-content: center; }
