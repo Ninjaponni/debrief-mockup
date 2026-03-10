@@ -2,8 +2,7 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#1F101D">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Debrief — Sit Trening</title>
 <style>
   /* --- FONTS --- */
@@ -54,7 +53,7 @@
 
   body {
     font-family: 'Inter', system-ui, sans-serif;
-    background: #1F101D;
+    background: #0a0408;
     color: var(--text);
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
@@ -1166,19 +1165,10 @@
   /* ====== MOBILE ====== */
   @media (max-width: 768px) {
 
-    /* Landskap og masker — strekkes under Safari URL-bar */
-    .landscape {
-      height: 140px;
-      bottom: 0;
-    }
-    .landscape-mask {
-      height: 190px;
-      bottom: -50px;
-    }
-    .content-fade {
-      bottom: 120px;
-      height: 80px;
-    }
+    /* Landskap og masker */
+    .landscape,
+    .landscape-mask { height: 140px; }
+    .content-fade { bottom: 120px; height: 80px; }
 
     /* Section padding */
     section,
@@ -1966,15 +1956,9 @@
       dot.classList.toggle('active', i === activeStationIdx);
     });
 
-    // --- REVEAL ANIMATIONS (staggered per element, fade out near landscape) ---
-    const fadeOutZone = isMobile() ? window.innerHeight - 180 : window.innerHeight - 280;
+    // --- REVEAL ANIMATIONS (staggered per element) ---
     document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale').forEach(el => {
       const rect = el.getBoundingClientRect();
-      // Fade out når elementet nærmer seg landskapssonen
-      if (rect.top > fadeOutZone) {
-        el.classList.remove('visible');
-        return;
-      }
       // Trigger when element is 80% from top of viewport (early trigger)
       if (rect.top < window.innerHeight * 0.85 && rect.bottom > 0) {
         // Stagger based on sibling index within parent
