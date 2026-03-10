@@ -1166,23 +1166,27 @@
   /* ====== MOBILE ====== */
   @media (max-width: 768px) {
 
-    /* Landskap og masker — inkluder safe-area for Safari URL-bar */
-    .landscape,
+    /* Landskap og masker — strekkes under Safari URL-bar */
+    .landscape {
+      height: 140px;
+      bottom: 0;
+    }
     .landscape-mask {
-      height: calc(140px + env(safe-area-inset-bottom, 0px));
+      height: 190px;
+      bottom: -50px;
     }
     .content-fade {
-      bottom: calc(120px + env(safe-area-inset-bottom, 0px));
+      bottom: 120px;
       height: 80px;
     }
 
-    /* Section padding — ekstra plass for Safari URL-bar */
+    /* Section padding */
     section,
-    .reveal-section { padding: 80px 20px calc(160px + env(safe-area-inset-bottom, 0px)); }
+    .reveal-section { padding: 80px 20px 160px; }
 
     /* Toast og scroll-hint */
-    .toast { bottom: calc(150px + env(safe-area-inset-bottom, 0px)); }
-    .scroll-hint { bottom: calc(150px + env(safe-area-inset-bottom, 0px)); }
+    .toast { bottom: 150px; }
+    .scroll-hint { bottom: 150px; }
 
     /* Textarea — forhindrer iOS zoom */
     .question textarea { font-size: 16px; }
@@ -1223,10 +1227,7 @@
     .logo { height: 16px; }
 
     /* Station dots */
-    .station-dots {
-      gap: 10px;
-      bottom: calc(14px + env(safe-area-inset-bottom, 0px));
-    }
+    .station-dots { gap: 10px; }
     .station-dot { width: 5px; height: 5px; }
 
     /* GAP-analyse — stakk vertikalt */
