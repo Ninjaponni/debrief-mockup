@@ -2,7 +2,8 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1F101D">
 <title>Debrief — Sit Trening</title>
 <style>
   /* --- FONTS --- */
@@ -49,11 +50,12 @@
   html {
     scroll-behavior: smooth;
     overflow-x: hidden;
+    background-color: #1F101D;
   }
 
   body {
     font-family: 'Inter', system-ui, sans-serif;
-    background: #0a0408;
+    background-color: #1F101D;
     color: var(--text);
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
@@ -1172,7 +1174,9 @@
 
     /* Section padding */
     section,
-    .reveal-section { padding: 80px 20px 160px; }
+    .reveal-section { padding: 80px 20px 200px; }
+
+    section { min-height: 100svh; }
 
     /* Toast og scroll-hint */
     .toast { bottom: 150px; }
