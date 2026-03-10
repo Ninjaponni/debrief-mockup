@@ -82,7 +82,7 @@
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 200px;
+    height: 250px;
     z-index: 50;
     pointer-events: none;
     overflow: hidden;
@@ -95,7 +95,7 @@
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 200px;
+    height: 250px;
     background: var(--bg);
     z-index: 45;
     pointer-events: none;
@@ -104,7 +104,7 @@
   /* Content fade zone — fades content to background color above the landscape */
   .content-fade {
     position: fixed;
-    bottom: 180px;
+    bottom: 230px;
     left: 0;
     width: 100%;
     height: 140px;
@@ -405,6 +405,16 @@
     font-size: 0.78rem;
     color: var(--chalk);
     opacity: 0.7;
+  }
+
+  .track-content a {
+    color: var(--salmon);
+    text-decoration: none;
+    border-bottom: 1px dotted rgba(254,140,104,0.4);
+    transition: border-color 0.2s;
+  }
+  .track-content a:hover {
+    border-bottom-style: solid;
   }
 
   .insight-source a {
@@ -1149,6 +1159,8 @@
   }
 
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>emailjs.init('EqZtaNW4-3Z1I3kl4');</script>
 </head>
 <body>
 
@@ -1186,58 +1198,20 @@
 <!-- Landscape (SVG) — z-index 50, in front of content -->
 <div class="landscape">
   <div class="landscape-canvas" id="landscapeCanvas">
-    <svg id="landscapeSvg" viewBox="0 0 8000 180" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="groundGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#2a1528" />
-          <stop offset="100%" stop-color="#1e0f1c" />
-        </linearGradient>
-        <linearGradient id="gapGlow" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#fe8c68" stop-opacity="0.5" />
-          <stop offset="100%" stop-color="#fe8c68" stop-opacity="0" />
-        </linearGradient>
-      </defs>
-
-      <!-- Placeholder terrain — will be replaced by custom design -->
-      <path d="M0,80 Q300,60 600,75 Q900,55 1200,65 Q1500,48 1800,58 Q2100,45 2400,55 Q2700,42 3000,50 Q3150,60 3250,85 Q3350,120 3450,140 Q3550,120 3650,85 Q3750,60 3900,48 Q4200,38 4500,42 Q4800,46 5100,50 Q5400,52 5700,48 Q6000,42 6300,45 Q6600,48 6900,42 Q7200,35 7500,24 Q7700,16 8000,10"
-            fill="none" stroke="rgba(101,26,90,0.08)" stroke-width="50" />
-
-      <path id="terrainPath" d="
-        M0,110 L100,110 Q200,108 400,110 Q600,106 800,102 Q900,98 1000,92
-        Q1200,85 1400,80 Q1600,76 1800,72 Q1900,70 2000,68 Q2200,64 2400,66 Q2600,64 2700,62
-        Q2800,60 2900,64 Q3000,60 3100,58 Q3200,66 Q3300,80 3400,110 Q3450,140 L3500,150 L3550,150
-        Q3600,140 3700,110 Q3800,80 3900,66 Q4000,58 4100,52 Q4200,48 4300,44 Q4500,40 Q4600,42 4800,46
-        Q5000,50 Q5200,52 5400,55 Q5500,56 5600,54 Q5700,52 5800,54 Q5900,52 6000,50
-        Q6100,50 6200,52 Q6400,54 Q6500,53 6600,52 Q6700,50 6800,52 Q6900,54 7000,50
-        Q7100,46 7200,42 Q7300,36 7400,30 Q7500,24 7600,18 Q7700,14 7800,10 Q7900,8 8000,6
-      " fill="url(#groundGrad)" stroke="rgba(101,26,90,0.4)" stroke-width="1.5" />
-
-      <path d="
-        M0,110 L100,110 Q200,108 400,110 Q600,106 800,102 Q900,98 1000,92
-        Q1200,85 1400,80 Q1600,76 1800,72 Q1900,70 2000,68 Q2200,64 2400,66 Q2600,64 2700,62
-        Q2800,60 2900,64 Q3000,60 3100,58 Q3200,66 Q3300,80 3400,110 Q3450,140 L3500,150 L3550,150
-        Q3600,140 3700,110 Q3800,80 3900,66 Q4000,58 4100,52 Q4200,48 4300,44 Q4500,40 Q4600,42 4800,46
-        Q5000,50 Q5200,52 5400,55 Q5500,56 5600,54 Q5700,52 5800,54 Q5900,52 6000,50
-        Q6100,50 6200,52 Q6400,54 Q6500,53 6600,52 Q6700,50 6800,52 Q6900,54 7000,50
-        Q7100,46 7200,42 Q7300,36 7400,30 Q7500,24 7600,18 Q7700,14 7800,10 Q7900,8 8000,6
-        L8000,200 L0,200 Z
-      " fill="url(#groundGrad)" />
-
-      <rect x="3380" y="130" width="170" height="50" fill="url(#gapGlow)" />
-
-      <!-- Placeholder elements -->
-      <rect x="120" y="88" width="36" height="22" fill="rgba(139,69,19,0.35)" rx="2" />
-      <polygon points="120,88 138,76 156,88" fill="rgba(139,69,19,0.4)" />
-      <line x1="3360" y1="68" x2="3690" y2="68" stroke="rgba(254,140,104,0.5)" stroke-width="2.5" stroke-dasharray="10,7" />
-      <line x1="7900" y1="8" x2="7900" y2="-18" stroke="rgba(254,140,104,0.7)" stroke-width="2" />
-      <polygon points="7900,-18 7935,-13 7900,-8" fill="rgba(254,140,104,0.6)" />
+    <svg id="landscapeSvg" viewBox="0 0 8000 300" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Bakre fjell (lysere lilla) -->
+      <path d="M400 147H0V248H8000V53C8000 53 7297 88 7200 93C7103 98 7084 96 7000 97C6916 98 4904 94 4800 93C4696 92 4589 87 4500 87C4411 87 4143.5 98.5 4100 99C4056.5 99.5 3948.5 103 3900 113C3851.5 123 3599 197 3550 197H3350C3309 197 3225 119 3200 113C3175 107 3127 104.5 3100 105C3073 105.5 2700 109 2700 109C2700 109 2091 113 2000 115C1909 117 905 149 800 149C695 149 400 147 400 147Z" fill="#251122"/>
+      <!-- Fremre terreng (matcher bakgrunn) -->
+      <path d="M400 199H0V300H8000V105C8000 105 7297 140 7200 145C7103 150 7084 148 7000 149C6916 150 4904 146 4800 145C4696 144 4589 139 4500 139C4411 139 4143.5 150.5 4100 151C4056.5 151.5 3948.5 155 3900 165C3851.5 175 3599 249 3550 249H3350C3309 249 3225 171 3200 165C3175 159 3127 156.5 3100 157C3073 157.5 2700 161 2700 161C2700 161 2091 165 2000 167C1909 169 905 201 800 201C695 201 400 199 400 199Z" fill="#1F101D"/>
+      <!-- Terrenglinje (stroke) — hesten følger denne -->
+      <path id="terrainPath" d="M0 199H400C400 199 695 201 800 201C905 201 1909 169 2000 167C2091 165 2700 161 2700 161C2700 161 3073 157.5 3100 157C3127 156.5 3175 159 3200 165C3225 171 3309 249 3350 249C3391 249 3501 249 3550 249C3599 249 3851.5 175 3900 165C3948.5 155 4056.5 151.5 4100 151C4143.5 150.5 4411 139 4500 139C4589 139 4696 144 4800 145C4904 146 6916 150 7000 149C7084 148 7103 150 7200 145C7297 140 8000 105 8000 105" stroke="#391535" fill="none"/>
     </svg>
   </div>
 </div>
 
 <!-- Pony -->
 <div class="pony-container" id="pony">
-  <div class="pony"><img src="Hest.png" alt="Superponni"></div>
+  <div class="pony"><img id="ponyImg" src="Pony/Pony_00000.png" alt="Superponni"></div>
 </div>
 
 <!-- Toast notification -->
@@ -1412,7 +1386,7 @@
               <h4>Hvorfor dette kan fungere</h4>
               Ved å vise bredden, fra volleyball til fjelltur til yoga, signaliserer vi at det finnes noe for alle. I Byron Sharp-termer utvider dette Sits category entry points dramatisk.
               <h4>Referanse</h4>
-              «This Girl Can» (Sport England) normaliserte alle former for bevegelse og fikk 3 millioner inaktive kvinner i gang.
+              <a href="https://www.thisgirlcan.co.uk/about" target="_blank">«This Girl Can»</a> (Sport England) normaliserte alle former for bevegelse og fikk 3 millioner inaktive kvinner i gang.
               <h4>Risiko</h4>
               Kan bli en «vi har alt»-kommunikasjon som er bred men tom. Må forankres i ekte studenthistorier.
               <button class="track-fav" onclick="toggleFav(event, this, 'Finn din greie')">Denne liker jeg</button>
@@ -1432,7 +1406,7 @@
               <h4>Hvorfor dette kan fungere</h4>
               1 av 3 studenter sliter psykisk. Ved å ramme inn aktivitet som en del av studentlivet, knytter vi oss til noe større enn treningsbransjen.
               <h4>Referanse</h4>
-              «Fitness Buddies»-programmet ved amerikanske universiteter ga bedre trivsel og lavere stress.
+              <a href="https://journals.sagepub.com/doi/10.1177/15588661241257478" target="_blank">«Fitness Buddies»</a>-programmet ved amerikanske universiteter ga bedre trivsel og lavere stress.
               <h4>Risiko</h4>
               Kan bli for «velferds-aktig» og miste energi. Må balansere varme med attraktivitet.
               <button class="track-fav" onclick="toggleFav(event, this, 'Studietid')">Denne liker jeg</button>
@@ -1452,7 +1426,7 @@
               <h4>Hvorfor dette kan fungere</h4>
               Du kan ikke reposisjonere med tilleggsinformasjon. Du må gjøre noe som bryter forventningen. Denne tilnærmingen er «modig», en av Sits egne verdier.
               <h4>Referanse</h4>
-              Gymshark #Gymshark66 solgte ikke produkter i kampanjen, men bygde community. 45 millioner visninger.
+              Gymshark <a href="https://www.gymshark.com/blog/article/what-is-the-gymshark-66-challenge" target="_blank">#Gymshark66</a> solgte ikke produkter i kampanjen, men bygde community. 45 millioner visninger.
               <h4>Risiko</h4>
               Kan møte motstand internt hos Sit. Treningssenter er største inntektskilde.
               <button class="track-fav" onclick="toggleFav(event, this, 'Det minste vi gjør')">Denne liker jeg</button>
@@ -1472,7 +1446,7 @@
               <h4>Hvorfor dette kan fungere</h4>
               Tilhørighetsbarrieren kan løses med sosiale mekanikker. 1 av 4 kvinner sa at tilstedeværelsen av noen som lignet dem ville gjort aktivitet mer innbydende.
               <h4>Referanse</h4>
-              Strava Clubs har firedoblet seg. Grupper som løper og sykler sammen som sosial infrastruktur.
+              <a href="https://press.strava.com/articles/strava-releases-annual-year-in-sport-trend" target="_blank">Strava Clubs</a> har firedoblet seg. Grupper som løper og sykler sammen som sosial infrastruktur.
               <h4>Risiko</h4>
               Buddy-mekanikker kan bli gimmicky. Kan ekskludere de som ikke har en venn.
               <button class="track-fav" onclick="toggleFav(event, this, 'Start med en venn')">Denne liker jeg</button>
@@ -1686,23 +1660,30 @@
   // --- LANDSCAPE & PONY ---
   const pony = document.getElementById('pony');
   const ponyEmoji = pony.querySelector('.pony');
+  const ponyImg = document.getElementById('ponyImg');
   const progressBar = document.getElementById('progressBar');
   const stationLabel = document.getElementById('stationLabel');
   const landscapeSvg = document.getElementById('landscapeSvg');
   const scrollHint = document.getElementById('scrollHint');
+
+  // Preload walk cycle frames
+  const PONY_FRAMES = 32;
+  const ponyFrames = [];
+  for (let i = 0; i < PONY_FRAMES; i++) {
+    const img = new Image();
+    img.src = `Pony/Pony_${String(i).padStart(5, '0')}.png`;
+    ponyFrames.push(img);
+  }
   let lastScroll = 0;
   let hasScrolled = false;
 
+  // Terrengpunkter fra Landscape.svg stroke-path (viewBox 8000x300)
   const terrainPoints = [
-    [0, 110], [400, 110], [800, 102], [1000, 92],
-    [1400, 80], [1800, 72], [2000, 68],
-    [2400, 66], [2700, 62], [2900, 64], [3100, 58],
-    [3200, 66], [3300, 80], [3400, 110], [3450, 140], [3500, 150], [3550, 150],
-    [3600, 140], [3700, 110], [3800, 80], [3900, 66],
-    [4100, 52], [4300, 44], [4500, 40], [4800, 46],
-    [5000, 50], [5400, 55], [5600, 54], [5800, 54], [6000, 50],
-    [6400, 54], [6800, 52], [7000, 50],
-    [7200, 42], [7400, 30], [7600, 18], [7800, 10], [8000, 6]
+    [0, 199], [400, 199], [800, 201], [2000, 167],
+    [2700, 161], [3100, 157], [3200, 165],
+    [3350, 249], [3550, 249],
+    [3900, 165], [4100, 151], [4500, 139],
+    [4800, 145], [7000, 149], [7200, 145], [8000, 105]
   ];
 
   function getTerrainY(xPos) {
@@ -1771,11 +1752,11 @@
     const ponySvgX = progress * SVG_WIDTH;
     const viewWidth = 1400;
     const svgOffset = Math.max(0, Math.min(ponySvgX - viewWidth * (ponyScreenX / 100), SVG_WIDTH - viewWidth));
-    landscapeSvg.setAttribute('viewBox', `${svgOffset} -25 ${viewWidth} 225`);
+    landscapeSvg.setAttribute('viewBox', `${svgOffset} 0 ${viewWidth} 300`);
 
     const terrainY = getTerrainY(ponySvgX);
-    const landscapeHeight = 200;
-    const ponyBottomOffset = ((200 - terrainY) / 225) * landscapeHeight;
+    const landscapeHeight = 250;
+    const ponyBottomOffset = ((300 - terrainY) / 300) * landscapeHeight;
     const bounceY = Math.sin(scrollTop * 0.035) * 5;
     pony.style.bottom = (ponyBottomOffset - 10 + bounceY) + 'px';
 
@@ -1789,6 +1770,12 @@
     // Fade in rotation gradually so it starts at 0
     const rotBlend = Math.min(progress / 0.05, 1);
     ponyEmoji.style.transform = `rotate(${terrainAngle * rotBlend}deg)`;
+
+    // Walk cycle — advance frame based on scroll distance
+    const pixelsPerFrame = 9;
+    const frameIndex = Math.floor(scrollTop / pixelsPerFrame) % PONY_FRAMES;
+    ponyImg.src = ponyFrames[frameIndex].src;
+
     lastScroll = scrollTop;
 
     // --- SECTION TRACKING ---
@@ -1900,6 +1887,10 @@
 
   // --- SUBMIT ---
   function submitFeedback() {
+    const btn = document.querySelector('.cta-button');
+    btn.textContent = 'Sender...';
+    btn.style.pointerEvents = 'none';
+
     const answers = [];
     document.querySelectorAll('.question').forEach(q => {
       const question = q.querySelector('.question-text').textContent;
@@ -1907,19 +1898,28 @@
       if (answer.trim()) answers.push({ question, answer });
     });
 
-    const data = {
-      favorites: [...favorites],
-      answers,
-      timestamp: new Date().toISOString()
-    };
+    const favList = [...favorites];
+    const answersHtml = answers.length
+      ? answers.map(a => `<p><strong>${a.question}</strong><br>${a.answer}</p>`).join('')
+      : '<p><em>Ingen svar gitt</em></p>';
 
-    console.log('Feedback:', JSON.stringify(data, null, 2));
-    showToast('Takk! Vi har mottatt tankene dine.');
-
-    const btn = document.querySelector('.cta-button');
-    btn.textContent = 'Sendt!';
-    btn.style.background = 'var(--tawny)';
-    btn.style.pointerEvents = 'none';
+    emailjs.send('service_3edzlcc', 'template_l5abj73', {
+      client_name: document.querySelector('h1').textContent,
+      favorites: favList.length
+        ? favList.map(f => `<div style="padding:8px 12px;margin-bottom:6px;background:#f7ecff;border-left:3px solid #fe8c68;border-radius:4px;">${f}</div>`).join('')
+        : '<em>Ingen favoritter valgt</em>',
+      answers: answersHtml,
+      timestamp: new Date().toLocaleString('nb-NO')
+    }).then(() => {
+      btn.textContent = 'Sendt!';
+      btn.style.background = 'var(--tawny)';
+      showToast('Takk! Vi har mottatt tankene dine.');
+    }).catch(err => {
+      console.error('EmailJS error:', err);
+      btn.textContent = 'Prøv igjen';
+      btn.style.pointerEvents = 'auto';
+      showToast('Noe gikk galt. Prøv igjen.');
+    });
   }
 </script>
 
