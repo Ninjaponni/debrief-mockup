@@ -980,9 +980,53 @@
     height: 60px;
     border-radius: 50%;
     background: radial-gradient(circle at 38% 35%, #fffef5 0%, #f0e8d0 30%, #d4c9a8 55%, #c4b899 100%);
-    z-index: 0;
-    pointer-events: none;
+    z-index: 65;
+    pointer-events: auto;
+    cursor: pointer;
     animation: moonPulse 8s ease-in-out infinite;
+  }
+
+  /* --- PONY SPEECH --- */
+  .pony-speech {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(calc(-30% + 20px));
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    white-space: nowrap;
+  }
+
+  .pony-speech.visible {
+    opacity: 1;
+  }
+
+  .pony-speech.fading {
+    opacity: 0;
+  }
+
+  .pony-speech-line {
+    position: absolute;
+    bottom: -5px;
+    left: 7px;
+    width: 1.5px;
+    height: 18px;
+    background: var(--text);
+    border-radius: 1px;
+    transform: rotate(30deg);
+    transform-origin: bottom center;
+  }
+
+  .pony-speech-text {
+    position: absolute;
+    bottom: 16px;
+    left: 8px;
+    font-family: 'Eighties Comeback', serif;
+    font-size: 1.1rem;
+    font-weight: 400;
+    color: var(--mint-light);
+    text-shadow: 0 2px 12px rgba(0,0,0,0.6);
   }
 
   /* Glow layers via pseudo-elements for depth */
@@ -1193,6 +1237,10 @@
       right: 30px;
     }
 
+    /* Ponni snakkeboble */
+    .pony-speech-text { font-size: 0.85rem; }
+    .pony-speech-line { height: 22px; }
+
     /* Iris reveal matcher ny måneposisjon */
     .iris-overlay {
       background: radial-gradient(
@@ -1384,6 +1432,10 @@
 <!-- Pony -->
 <div class="pony-container" id="pony">
   <div class="pony"><img id="ponyImg" src="Pony/Pony_00000.png" alt="Superponni"></div>
+  <div class="pony-speech" id="ponySpeech">
+    <div class="pony-speech-line"></div>
+    <div class="pony-speech-text" id="ponySpeechText"></div>
+  </div>
 </div>
 
 <!-- Toast notification -->
@@ -2069,6 +2121,80 @@
       document.querySelectorAll('.tooltip-active').forEach(a => a.classList.remove('tooltip-active'));
     });
   }
+
+  // --- PONY SPEECH (moon easter egg) ---
+  const ponySpeechPhrases = [
+    'High hov!',
+    'Neigh-maste!',
+    'Hei på deg!',
+    'Vrinsj!',
+    'Scroll videre, du!',
+    'Fint måneskin i kveld',
+    'Klar for kreativ galoppering?',
+    'Superponni approves',
+    'Kan du klø meg bak øret?',
+    'Strategisk retning: fremover!',
+    'Denne debrifen er gull',
+    'Trø til!',
+    'Ponni uten støttehjul',
+    'Ponnien er løs!',
+    'Har du godbit?',
+    'Tar meg bare en pause',
+    'Dette er imponerende',
+    'Debrief schmebrief',
+    'Ferdig snaaaart?',
+    'Har du sett fitbit\u0027en min?',
+    'Ævv, fikk strekk i leggen!!',
+    'Noen som sa Pepsi Max?',
+    'Ikke se på meg, scroll!',
+    'Kan noen åpne grinda?',
+    'Neighhh...',
+  ];
+
+  const ponySpeech = document.getElementById('ponySpeech');
+  const ponySpeechText = document.getElementById('ponySpeechText');
+  let ponySpeechTimer = null;
+  let lastPhraseIndex = -1;
+
+  function showPonySpeech() {
+    // Avbryt eksisterende animasjon
+    if (ponySpeechTimer) {
+      clearTimeout(ponySpeechTimer);
+      ponySpeechTimer = null;
+    }
+
+    // Fade ut først hvis allerede synlig
+    if (ponySpeech.classList.contains('visible')) {
+      ponySpeech.classList.remove('visible');
+      ponySpeech.classList.add('fading');
+      setTimeout(() => {
+        ponySpeech.classList.remove('fading');
+        triggerNewPhrase();
+      }, 400);
+    } else {
+      triggerNewPhrase();
+    }
+  }
+
+  function triggerNewPhrase() {
+    let idx;
+    do {
+      idx = Math.floor(Math.random() * ponySpeechPhrases.length);
+    } while (idx === lastPhraseIndex);
+    lastPhraseIndex = idx;
+    const phrase = ponySpeechPhrases[idx];
+    ponySpeechText.textContent = phrase;
+    ponySpeech.classList.add('visible');
+
+    ponySpeechTimer = setTimeout(() => {
+      ponySpeech.classList.remove('visible');
+      ponySpeech.classList.add('fading');
+      setTimeout(() => ponySpeech.classList.remove('fading'), 400);
+      ponySpeechTimer = null;
+    }, 3000);
+  }
+
+  document.querySelector('.moon').addEventListener('click', showPonySpeech);
 
   // --- SUBMIT ---
   function submitFeedback() {
