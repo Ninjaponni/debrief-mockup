@@ -2073,17 +2073,24 @@
   // --- SUBMIT ---
   function submitFeedback() {
     const btn = document.querySelector('.cta-button');
-    btn.textContent = 'Sender...';
-    btn.style.pointerEvents = 'none';
 
+    // Sjekk om bruker har fylt inn noe
     const answers = [];
     document.querySelectorAll('.question').forEach(q => {
       const question = q.querySelector('.question-text').textContent;
       const answer = q.querySelector('textarea').value;
       if (answer.trim()) answers.push({ question, answer });
     });
-
     const favList = [...favorites];
+
+    if (answers.length === 0 && favList.length === 0) {
+      showToast('Velg minst én favoritt eller svar på et spørsmål først.');
+      return;
+    }
+
+    btn.textContent = 'Sender...';
+    btn.style.pointerEvents = 'none';
+
     const answersHtml = answers.length
       ? answers.map(a => `<p><strong>${a.question}</strong><br>${a.answer}</p>`).join('')
       : '<p><em>Ingen svar gitt</em></p>';
