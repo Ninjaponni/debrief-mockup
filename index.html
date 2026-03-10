@@ -1966,9 +1966,15 @@
       dot.classList.toggle('active', i === activeStationIdx);
     });
 
-    // --- REVEAL ANIMATIONS (staggered per element) ---
+    // --- REVEAL ANIMATIONS (staggered per element, fade out near landscape) ---
+    const fadeOutZone = isMobile() ? window.innerHeight - 180 : window.innerHeight - 280;
     document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale').forEach(el => {
       const rect = el.getBoundingClientRect();
+      // Fade out når elementet nærmer seg landskapssonen
+      if (rect.top > fadeOutZone) {
+        el.classList.remove('visible');
+        return;
+      }
       // Trigger when element is 80% from top of viewport (early trigger)
       if (rect.top < window.innerHeight * 0.85 && rect.bottom > 0) {
         // Stagger based on sibling index within parent
